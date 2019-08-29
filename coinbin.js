@@ -2,10 +2,8 @@ $(document).ready(function() {
 
 
 
-	/* new -> address code */
-
 	if($("#newKeysBtn").is(":checked")){
-		// check if something is in local storage.
+		
 		if(localStorage && localStorage.getItem('newBitcoinAddress')){
 			$("#newPubKey2").val("");   //////////////////////////////////////////////////////
 			$("#newPubKey3").val("");
@@ -16,7 +14,6 @@ $(document).ready(function() {
             $("#newPubKey, #newPubKey1").val(localStorage.getItem('newPubKey'));
 			$("#newPrivKey").val(localStorage.getItem('newPrivKey'));
 		} else {		
-		// if nothing is in local storage:
 		coinjs.compressed = true;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 		var s = ($("#newBrainwallet").is(":checked")) ? $("#brainwallet").val() : null;
@@ -56,9 +53,8 @@ $(document).ready(function() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
-	/* new -> multisig code */
+
    function newMultiSigAddress()  {
-//	$("#newMultiSigAddress").click(function(){                          //////////////// Submit button made into function instead
 
 		$("#multiSigData").removeClass('show').addClass('hidden').fadeOut();
 		$("#multisigPubKeys .pubkey").parent().removeClass('has-error');
@@ -84,14 +80,7 @@ $(document).ready(function() {
 
 		});
 		
-		////// build second part of json array, to be merged later ///////////////////////////////////////
-///////////////////////	MSaddress, MSredeem    ////////////////////////////////////////////
-		
-		
-		
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//					    console.log(keys);
-////// validating set of 3:
+
 	//	keys = $.unique(keys);
 		function hasDuplicates(keys) {
     return (new Set(keys)).size !== keys.length;
@@ -125,28 +114,18 @@ $(document).ready(function() {
 		} else {
 			$("#multiSigErrorMsg").html('<span class="glyphicon glyphicon-exclamation-sign"></span> Error: One or more public keys are missing or invalid!').fadeIn();
 		}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
-	////////////////////////////////////     Assemble and Submit JSON here:
 
-//	console.log(keys[0]);
-//	console.log(keys[1]);
-//	console.log(keys[2]);
 	
 						    keys[3] = MSaddress;
 							keys[4] = MSredeem;
-//	console.log(keys[3]);  // jot
-//	console.log(keys[4]);				
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////         Construct offer in DB after Collab is confirmed/returned. Then show offer areas.
-							
-		doAjax();					
+	
+	doAjax();					
 
 	function doAjax() {
 		
 		
 		var array, ajax;
-					
-		
+	
           array = JSON.stringify(keys);
 //		 console.log(array);  // this is what is being sent out
 	
@@ -182,7 +161,6 @@ function collabsAjax(arr) {
     }); // end ajax call
 	
 }		
-// This takes care of data once returned from Server:
 	function processData(returnedstuff) {
  //  console.log(returnedstuff);
 	var response = returnedstuff;
@@ -197,7 +175,7 @@ function collabsAjax(arr) {
 
 	
 	if(response.newEntry) {
-			// use MSredeem from above, and process through Verify form;
+// use MSredeem from above, and process through Verify form;
 //					console.log("this here is the original, unreturned MSredeem:");
 //  console.log(MSredeem);
 //					console.log("this here is the original, unreturned MSaddress:");
@@ -210,7 +188,7 @@ $("#verifyRScript").val("");
 		  
 		  
 	if (response.newEntry == false && response.reuseError == false) {
-			//take retrieved data.keyset.MSredeem, compare again with original and then process it through Verify Form;
+//take retrieved data.keyset.MSredeem, compare again with original and then process it through Verify Form;
 //			console.log("this here is the returned MSredeem:");
 //		console.log(response.data.keyset['MSredeem']);
 //	console.log("this here is the returned MSaddress:");
