@@ -1,9 +1,111 @@
 $(document).ready(function() {
 
+if (!window.indexedDB) {
+	alert("IndexedDB is not supported! Sorry, your browser is too old! Some features are not supported!");
+}
 
+// localforage.clear()
+
+//  how to update single array element:
+//  localforage.getItem(MSstring).then(function (item) {
+//  item[3] = offer;
+//  localforage.setItem(MSstring, item );
+//  });
+var oldOffer = "";
+
+
+
+  localforage.keys().then(function (keys)  {
+
+  var oldMSigs = $('#oldMSigs');
+  oldMSigs.html('');
+
+  for (var i = 0; i < keys.length; i++) {
+    oldMSigs.append('<label>&nbsp &nbsp<input type="radio" name="keys" value="' + keys[i] + '" /> ' + keys[i] + '</label>');
+  }
+ }).catch(function(err) {
+     console.log(err);
+}); 
+  
+
+
+$('#changeMS').val("");                     
+$('#oldMSigs').on('change', 'input', function() {
+  var elem = $(this);
+  if (elem.is(':checked')) {
+$('#changeMS').val(elem.val());
+
+  }
+});
+var MSstring = "";
+var MSarray = [];
+var RedeemScript = "";
+
+$("#oldMSbutton").on('click', function() {
+	MSstring = $('#changeMS').val();
+	MSrehab(MSstring);
+ });
+
+ //$(".show_hide_unfinished").click(function() {
+ //    $("#unfinishedMS").toggle()
+ // });
+ 
+ 
+ $(".show_hide_initiation").click(function() {
+    // $("#initiation").toggle();
+
+ $("#initiation").removeClass ('hidden').addClass('show').fadeIn();
+  $('#verifyR').removeClass('show').addClass('hidden').fadeOut();
+  $('#contract').removeClass('show').addClass('hidden').fadeOut();
+  $('#newTransaction').removeClass('show').addClass('hidden').fadeOut();
+  $('#verifyTX').removeClass('show').addClass('hidden').fadeOut();
+  $('#sign').removeClass('show').addClass('hidden').fadeOut();
+  $('#verifySig').removeClass('show').addClass('hidden').fadeOut();
+  $('#sign1').removeClass('show').addClass('hidden').fadeOut();
+  $('#broadcast').removeClass('show').addClass('hidden').fadeOut();
+});
+
+
+
+function MSrehab(MSstring)  {
+	localforage.getItem(MSstring).then(function(value) {
+ oldJWT = value[0];
+ oldMSredeem = value[1];
+ oldOffer = value[2];
+ console.log(oldJWT);
+ console.log(oldMSredeem);
+ oldMSaddress = MSstring;
+ MSaddress = oldMSaddress;
+ localStorage.setItem('Token', oldJWT);
+ localStorage.setItem('MSaddress', oldMSaddress);
+ localStorage.setItem('MSredeem', oldMSredeem);
+ RedeemScript = oldMSredeem;
+ $("#initiation").removeClass('show').addClass('hidden').fadeOut();
+ 	$("#verifyRScript").val("");
+ localforage.getItem(MSstring).then(function(value) { oldOffer = value[2];
+	$('#offer1Area').val(oldOffer);
+										});
+//	$('#offer2Area').val("(Please click Submit to get the current offer!)");
+  
+ 
+ $("#verifyR").removeClass ('hidden').addClass('show').fadeIn(); 
+ window.location = "#verifyR";
+ decodeRedeemScript();
+ $("#nullData").val("");
+ $('#newTransaction').removeClass('show').addClass('hidden').fadeOut();
+ 
+}).catch(function(err) {
+    console.log(err);
+});
+	
+
+}  // end MSrehab
+
+
+	/* new -> address code */
 
 	if($("#newKeysBtn").is(":checked")){
-		
+		// check if something is in local storage.
 		if(localStorage && localStorage.getItem('newBitcoinAddress')){
 			$("#newPubKey2").val("");   //////////////////////////////////////////////////////
 			$("#newPubKey3").val("");
@@ -14,6 +116,7 @@ $(document).ready(function() {
             $("#newPubKey, #newPubKey1").val(localStorage.getItem('newPubKey'));
 			$("#newPrivKey").val(localStorage.getItem('newPrivKey'));
 		} else {		
+		// if nothing is in local storage:
 		coinjs.compressed = true;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 		var s = ($("#newBrainwallet").is(":checked")) ? $("#brainwallet").val() : null;
@@ -53,8 +156,10 @@ $(document).ready(function() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
-
+	/* new -> multisig code */
    function newMultiSigAddress()  {
+	
+//	$("#newMultiSigAddress").click(function(){                          //////////////// Submit button made into function instead
 
 		$("#multiSigData").removeClass('show').addClass('hidden').fadeOut();
 		$("#multisigPubKeys .pubkey").parent().removeClass('has-error');
@@ -80,7 +185,14 @@ $(document).ready(function() {
 
 		});
 		
-
+		////// build second part of json array, to be merged later ///////////////////////////////////////
+///////////////////////	MSaddress, MSredeem    ////////////////////////////////////////////
+		
+		
+		
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//					    console.log(keys);
+////// validating set of 3:
 	//	keys = $.unique(keys);
 		function hasDuplicates(keys) {
     return (new Set(keys)).size !== keys.length;
@@ -114,18 +226,30 @@ $(document).ready(function() {
 		} else {
 			$("#multiSigErrorMsg").html('<span class="glyphicon glyphicon-exclamation-sign"></span> Error: One or more public keys are missing or invalid!').fadeIn();
 		}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+	////////////////////////////////////     Assemble and Submit JSON here:
 
+//	console.log(keys[0]);
+//	console.log(keys[1]);
+//	console.log(keys[2]);
 	
 						    keys[3] = MSaddress;
 							keys[4] = MSredeem;
-	
-	doAjax();					
+//	console.log(keys[3]);  // jot
+//	console.log(keys[4]);				
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////         Construct offer in DB after Collab is confirmed/returned. Then show offer areas.
+// if (!localStorage.getItem("Token"))						
+//	{ doAjax(); }
+
+	doAjax();
 
 	function doAjax() {
 		
 		
 		var array, ajax;
-	
+					
+		
           array = JSON.stringify(keys);
 //		 console.log(array);  // this is what is being sent out
 	
@@ -161,12 +285,15 @@ function collabsAjax(arr) {
     }); // end ajax call
 	
 }		
+// This takes care of data once returned from Server:
 	function processData(returnedstuff) {
  //  console.log(returnedstuff);
 	var response = returnedstuff;
 	
 	var JWT = response.data.jwt;
-		if (JWT) {localStorage.setItem( "Token", JWT); }
+		if (JWT) {
+			localStorage.setItem("Token", JWT);
+				}
 //	var response = JSON.parse(returnedstuff);
 //	console.log("this here is the JSONparsed response:");
 //   console.log(response);
@@ -175,28 +302,44 @@ function collabsAjax(arr) {
 
 	
 	if(response.newEntry) {
-// use MSredeem from above, and process through Verify form;
+			// use MSredeem from above, and process through Verify form;
 //					console.log("this here is the original, unreturned MSredeem:");
 //  console.log(MSredeem);
 //					console.log("this here is the original, unreturned MSaddress:");
 //  console.log(MSaddress);
 AddressMS = MSaddress;
 RedeemScript = MSredeem;
+
+if (JWT) {
+	MSarray = [JWT, MSredeem];
+	localforage.setItem(MSaddress, MSarray);
+	}
 $("#verifyRScript").val("");
 			decodeRedeemScript();                // calls verification form result
-	      }
+
+   }
 		  
 		  
 	if (response.newEntry == false && response.reuseError == false) {
-//take retrieved data.keyset.MSredeem, compare again with original and then process it through Verify Form;
+			//take retrieved data.keyset.MSredeem, compare again with original and then process it through Verify Form;
 //			console.log("this here is the returned MSredeem:");
 //		console.log(response.data.keyset['MSredeem']);
 //	console.log("this here is the returned MSaddress:");
 //	console.log(response.data.keyset['MSaddress']);
-RedeemScript = response.data.keyset['MSredeem'];
-AddressMS = response.data.keyset['MSaddress'];
+
+MSredeem = response.data.keyset['MSredeem'];
+RedeemScript = MSredeem;
+MSaddress = response.data.keyset['MSaddress'];
+AddressMS =  MSaddress;
+
+if (JWT) {
+	MSarray = [JWT, MSredeem];
+	localforage.setItem(MSaddress, MSarray);
+	}
+
 $("#verifyRScript").val("");
 			decodeRedeemScript();                // calls verification form result
+			
     	}
 		
 		
@@ -278,6 +421,7 @@ var response = JSON.parse(returnedstuff);
 //	console.log("this here is the JSONparsed response:");
 // console.log(response);
 var Sig = response.data.Sig;
+// var Checksum = response.data.Checksum;
 
 if (Sig) {
 $('#verifySig').removeClass('hidden').show();
@@ -285,6 +429,10 @@ $('#verifySigScript').val(Sig);
 decodeSignatureScript();
 $('#sign1').removeClass('hidden').show();
 }
+
+// if (Checksum) {
+// $('#checksum2').val(Checksum);
+// }
 
 if (response.noMatch == true) {
   Swal.fire({
@@ -300,7 +448,7 @@ if (response.noDeal == true) {
   Swal.fire({
   position: 'center',
   type: 'warning',
-  title: 'The contract (Meeting of the minds/checksums) is missing. Please start a new contract from scratch or process it elsewhere!',
+  title: 'The contract (Meeting of the minds/checksums) is missing or has been changed. Please check with the other party!',
   showConfirmButton: false,
   timer: 2500
 });
@@ -406,7 +554,7 @@ $("#verifySigScript").val("");
 		$(".refund").remove(); redeemFromBtn();
 		} else {  $("#recipients").prepend(newRow); redeemFromBtn();
 		}
-	});
+	});   // toggle and run redeemFromBtn() every time
 
 
 
@@ -437,7 +585,7 @@ $("#verifySigScript").val("");
 	redeemFromBtn(transactionBtn);	
 	setTimeout(function(){
 	transactionBtn();	
-	}, 1000);
+	}, 1000);           /// cheap hack
 	
 //	redeemFromBtn(CallTransactionBtn);
 //	console.log("redeem function called");
@@ -660,26 +808,26 @@ $("#verifySigScript").val("");
 		var host = $(this).attr('rel');
 
 
-		if(host=='blockr.io_bitcoinmainnet'){
-			listUnspentBlockrio_BitcoinMainnet(redeem);
-		} else if(host=='chain.so_litecoin'){
-			listUnspentChainso_Litecoin(redeem);
-		}  else if(host=='chain.so_dogecoin'){
-			listUnspentChainso_Dogecoin(redeem);
-		}  else if(host=='cryptoid.info_carboncoin'){
-			listUnspentCryptoidinfo_Carboncoin(redeem);
-		} else {
+	//	if(host=='blockr.io_bitcoinmainnet'){
+		//	listUnspentBlockrio_BitcoinMainnet(redeem);
+		//} else if(host=='chain.so_litecoin'){
+		//	listUnspentChainso_Litecoin(redeem);
+		//}  else if(host=='chain.so_dogecoin'){
+		//	listUnspentChainso_Dogecoin(redeem);
+		//}  else if(host=='cryptoid.info_carboncoin'){
+		//	listUnspentCryptoidinfo_Carboncoin(redeem);
+		//} else {
 			listUnspentDefault(redeem);
-		}
+	//	}
 
-		if($("#redeemFromStatus").hasClass("hidden")) {
-			// An ethical dilemma: Should we automatically set nLockTime?
-			if(redeem.from == 'redeemScript' && redeem.decodedRs.type == "hodl__") {
-				$("#nLockTime").val(redeem.decodedRs.checklocktimeverify);
-			} else {
-				$("#nLockTime").val(0);
-			}
-		}
+		//if($("#redeemFromStatus").hasClass("hidden")) {
+		//	// An ethical dilemma: Should we automatically set nLockTime?
+		//	if(redeem.from == 'redeemScript' && redeem.decodedRs.type == "hodl__") {
+		//		$("#nLockTime").val(redeem.decodedRs.checklocktimeverify);
+		//	} else {
+		//		$("#nLockTime").val(0);
+		//	}
+		//}
 
 	};
 
@@ -717,7 +865,7 @@ $("#verifySigScript").val("");
 		return r;
 	}
 	
-	// Retrieve currency values from web
+	// Retrieve values from web
 	
 		
 	/* mediator payment code for when you used a public key */
@@ -736,7 +884,7 @@ $("#verifySigScript").val("");
 					var fee = ms[2]*1; // fee in a percentage
 					var payto = coinjs.pubkey2address(pubkey); // pay to mediators address
 
-					if(o==pubkey){ // matched a mediators pubkey?
+	//				if(o==pubkey){ console.log(o); };// matched a mediators pubkey? 
 
 
   $.getJSON("https://bitcoinfees.earn.com/api/v1/fees/recommended", function(result){ 
@@ -744,7 +892,6 @@ $("#verifySigScript").val("");
 				var optiFee = (result.halfHourFee * 470) * 0.00000001;     // transaction size in bytes
             	$("#transactionFee").val(optiFee);
 				$("#txFee").html((optiFee).toFixed(8));
-
  $.getJSON(" https://apiv2.bitcoinaverage.com/constants/exchangerates/global", function(result){
         var rate = 1 / (result.rates.BTC.rate);
 		var amount = (result.rates.BTC.rate) * 0.1;
@@ -756,7 +903,7 @@ $("#verifySigScript").val("");
 	//					$("#recipients .mediator_"+pubkey+" .amount:first").attr('disabled',(((amount*1)==0)?false:true)).val(amount).attr('title','Arbitration fee for '+$(mo).html());
 					$("#Arbitrator").val(payto).attr('readonly',true).attr('title','Arbitrator address for '+$(mo).html());
                      
-					var facilitatorAddress = "1Cgx8AeJ9Cxm4KJcdLRzKHGai2m9ft4Y3k";
+					var facilitatorAddress = "1JuyanqX9f4fQK9jWCEecY4FUMKHhQibi6";
 					$("#Facilitator").val(facilitatorAddress).attr('readonly',true).attr('title','Facilitator address for '+$(mo).html());
                        //                      $("#facilitatorFee").val(facilitatorFee).attr('title','Facilitator Bonus');
 		//			console.log(offer2Checksum);
@@ -783,7 +930,7 @@ $("#returnUSD").val(Math.round($("#buyerRefund").val()*rate*100)/100);
 
  });
   }); // End of web retrievals
-					};
+//					}; // end pubkey stuff
 				});
 			});
 
@@ -811,11 +958,21 @@ $("#returnUSD").val(Math.round($("#buyerRefund").val()*rate*100)/100);
 
 	/* default function to retrieve unspent outputs*/	
 	function listUnspentDefault(redeem) {
-
 		var tx = coinjs.transaction();
 		tx.listUnspent(redeem.addr, function(data){
 			if(redeem.addr) {
 				$("#redeemFromAddress").removeClass('hidden').html('<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <h4><a href="https://chain.so/address/BTC/'+redeem.addr+'" target="_blank">'+redeem.addr+'</a> </font></h4>');
+	
+		
+	localforage.getItem(redeem.addr).then(function(value) {
+    // This code runs once the value has been loaded
+    // from the offline store.
+//   console.log(value);
+}).catch(function(err) {
+    // This code runs if there were any errors
+    console.log(err);
+});
+
 				
 //			if (redeem.addr != AddressMS) {
 //					TXAjax(redeem);
@@ -1077,10 +1234,12 @@ $("#returnUSD").val(Math.round($("#buyerRefund").val()*rate*100)/100);
 	function decodeRedeemScript(){
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		$("#verifyRScript").val(RedeemScript);  // Fills in form
-		
-		if (($("#redeemFrom").val()) == "")	{	$("#redeemFrom").val(RedeemScript);
+		console.log(RedeemScript);
+		console.log($("#verifyRScript").val());
+//		if (($("#redeemFrom").val()) == "")	{	$("#redeemFrom").val(RedeemScript);
+		$("#redeemFrom").val(RedeemScript);
 		redeemFromBtn();
-		}
+//		}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		var script = coinjs.script();
 		var decode = script.decodeRedeemScript($("#verifyRScript").val());   

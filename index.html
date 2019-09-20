@@ -2,12 +2,12 @@
 <html lang="en">
 	<head>
 
-		<title>Bitcoin Collaborative Multisig Intelligent Worksheet - AltConSys.com</title>
+		<title>Bitcoin MultiSig Collabo-Wallet - AltConSys.com / Checkabid.com</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="referrer" content="origin">
 		<meta http-equiv="content-type" content="text/html;charset=utf-8" />
 		<meta name="keywords" content="bitcoin, wallet, multisig, multisignature, address, browser, segwit, javascript, js, broadcast, transaction, verify, decode" />
-		<meta name="description" content="Bitcoin Acceptance Intelligent Worksheet By Alternative Content Systems (AltConSys). Accept Bitcoin where the site owner doesn't permit it. (This worksheet is loosely based on Coinbin (Coinb.in)" />
+		<meta name="description" content="Bitcoin MultiSig Collabo-Wallet By Alternative Content Systems (AltConSys)" />
 
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,6 +44,8 @@
 		<link rel="stylesheet" href="css/sweetalert2.css">	
 		<script src="js/offers.js" type="text/javascript"></script>
 		<script src="js/tx.js" type="text/javascript"></script>
+		<script type="text/javascript" src="js/localforage.min.js"></script>
+		
 		
 		
 		<style>
@@ -67,7 +69,7 @@ body {
   padding: 10px;
   text-align: center;
   background: #e6e6ff;
-  color: #1a1aff;
+  color: #4d4dff;
 }
 
 /* Increase the font size of the heading */
@@ -82,14 +84,13 @@ body {
 	<body>
 		
 		 <div class="header">
-  <h1><b>Bitcoin Multisig Collaborative Worksheet by AltConSys</b></h1>
+  <h1><b>Bitcoin Multisig Collabo-Wallet by AltConSys</b></h1>
 <ul>
 <li>Optimized as Payment System for Sites Like eBay and Amazon</li>
 <li>For Ultimate Safety and Transparency: Manually supervise EVERY step and process</li>
 <li>No Logins, Usernames, eMails or Passwords Required. We Don't Care Who You Are and What You Do!</li>
 <li>Private Keys Never Leave Your Browser. Brief Storage of PUBLIC Keys/Scripts for Collaboration & Convenience Only</li>
-<li>Bare Bones Beta Version 0.001. Kindly help us test it. All is 100% safe with normal "Due Diligence". Report issues on Github</li>
-<li>Shortcoming at this time: Only one transaction can be started/finished at a time. A feature upgrade will be added soon!</li>
+<li>Bare Bones Beta Version 0.001. Please help us test it. All is 100% safe. Report issues <a href="https://github.com/i88i/MultisigCollab">on Github</a></li>
 
 
 
@@ -97,19 +98,36 @@ body {
 </div> 
 		
 		
-		<div id="wrap">
-			
 
-			<div id="content" class="container">
 
 				<noscript class="alert alert-danger center-block"><span class="glyphicon glyphicon-exclamation-sign"></span> This page uses javascript, please enable it to continue!</noscript>
 
-				
-				
-				<div class="tab-pane tab-content" id="getGoing">
+<!--<center><h4 style="color:blue"><u><button class="show_hide_unfinished">Continue with a Previous, Unfinished Multisig Transaction (Click Here)</button></u></h4></button></center>-->	
+	
+		<center><div id="oldMSigs"></div></center>
+		
+			<div id="wrap">
+			<div id="content" class="container">	
+		
+		
+			<form id=MSnumber>
+				<div class="input-group">
+				<input id="changeMS" type="text" class="form-control address" value="" readonly/>
+				<span class="input-group-btn">
+				<button id="oldMSbutton" type="button" class="btn btn-default" style="background-color:#ffffb3;font-size:medium"><< ==== Continue With This Previous Multisig Address / Unfinished Transaction</button>
+				</span> 
+				</div>
+			</form>
+
+
+
+
+		<center><h5 style="color:blue "><u><button class="show_hide_initiation">Start or Continue With a Brand New Multisig Transaction</button></u></h5></center> 	
+<div class="tab-pane tab-content hidden" id="initiation">		
+	
 					<p>.</p>
 				
-						<label>Your Address (Share)</label>
+						<label>Your Address</label>
  
 						<div class="input-group">
 							<input id="newBitcoinAddress" type="text" class="form-control address" value="" readonly>
@@ -118,7 +136,7 @@ body {
 							</span>
 						</div>
 
-						<label>YOUR Public key (Share - email or send otherwise)</label>
+						<label>YOUR Public key (Please eMail or otherwise send this key to your contract counter-party, as they will send you theirs)</label>
 						<div class="input-group">	
 							<input id="newPubKey" type="text" class="form-control address" readonly></p>  
 							<span class="input-group-btn">
@@ -126,7 +144,7 @@ body {
 							</span>
 						</div>
 						
-						<label>YOUR Private key (<mark style="background-color:#ffd480">Will disappear for your protection. Copy/Save it immediately to a separate text file. Keep it secret!</mark>)</label>
+						<label>YOUR Private key (<mark style="background-color:yellow">Will disappear for your protection. Copy/Save it immediately to a separate text file. Keep it secret!</mark>)</label>
 						<div class="input-group">
 							<input id="newPrivKey" type="password" class="form-control" value="" readonly>
 							<span class="input-group-btn">
@@ -138,35 +156,37 @@ body {
 							<label>AES-256 Encrypted WIF key</label>
 							<input id="newPrivKeyEnc" type="text" class="form-control" value="" readonly>
 							
-						<p></div><div class="col-md-3"></p>
-								<p><p class="alert alert-info"><span class="glyphicon glyphicon-remove"></span> <a href="javascript:;" data-toggle="modal" data-target="#modalResetkeys"><abbr>Reset All Keys (be sure to save them first - just in case!)</abbr></a></p></p>
-							<p></div></p>
-
+						</div>
+						<p></p>
+						<div class="col-md-2">
+						<p class="alert alert-warning"><span class="glyphicon glyphicon-remove"></span> <a href="javascript:;" data-toggle="modal" data-target="#modalResetkeys" class="alert-link">Reset All Keys</a></p>
+						</div>
+						
 				<input type="checkbox" class="hidden" id="newKeysBtn" checked>
-						<br>
-					</div>
+						
 
-					<div class="tab-pane tab-content" id="newMultiSig">
+
+		<div  id="newMultiSig">
 
 						<div id="multisigPubKeys" class="row">
 							<div class="form-horizontal">
 							  <div class="col-xs-11">
 
-								<p><label>Here is YOUR PUBLIC KEY again: (Please email or otherwise send this to the other party to start your contract!)</label>
-						<input id="newPubKey1" type="text" class="form-control pubkey" readonly></p>  
+								<!--<p><label>Here is YOUR PUBLIC KEY again: (Please email or otherwise send this to the other party to start your contract!)</label>-->
+						<input id="newPubKey1" type="text" class="form-control pubkey hidden" readonly>  
 							
 								
-							<p> <label>Your arbitrator is AltConSys:</label>
+							<!--<p> <label>Your arbitrator is AltConSys:</label>-->
 							
-							<input id="newPubKey2" type="text" class="form-control pubkey" readonly></p>
-							
-							<div id ="pubkeyalert" class="col-md-3">
-								<center><p class="alert alert-info"> <a href="javascript:;" data-toggle="modal" data-target="#modalPubkey"><abbr>Click here to enter the other party's public key</abbr></a></p></center>
+							<input id="newPubKey2" type="text" class="form-control pubkey hidden" readonly>
+						
+							<div id ="pubkeyalert" class="col-md-12 row">
+								<center><p class="alert alert-info"> <a href="javascript:;" data-toggle="modal" data-target="#modalPubkey" class="alert-link" style=font-size:medium>Click here to enter the other party's public key</a></p></center>
 							</div>
 							<br>
 							
-							<p> <label for="newPubKey3"><== Next, the OTHER PARTY need to send you THEIR public key for you to enter it below (use this link):</label>
-							<input id="newPubKey3" type="text" class="form-control pubkey phoenix-btc" placeholder="Counterparty's public key goes here. Use link to enter it!" value="" readonly></p>
+							<p> <label for="newPubKey3"> The OTHER PARTY need to eMail or otherwise send you THEIR public key: (enter it again to continue....)</label>
+							<input id="newPubKey3" type="text" class="form-control pubkey phoenix-btc" placeholder="Counterparty's public key goes here. Use link above to enter it!" value="" readonly></p>
 								</div>
 								<!--<a href="javascript:;" class="pubkeyAdd"><span class="glyphicon glyphicon-plus hidden"></span></a>-->
 								<br><br>
@@ -187,8 +207,8 @@ body {
 						<br>
 
 						<div id="multiSigErrorMsg" class="alert alert-danger" style="display:none;"></div>
-						
-						
+	</div> 			
+</div>	  <!--- End Initiation -->							
 						<div class="tab-pane tab-content hidden" id="verifyR">
 						
 						<div class="row">
@@ -214,14 +234,14 @@ body {
     									</div>
     								</div>
 
-								
+								<p>.</p>
 		    						
-    								<label>Please double-check below pubkeys with what you have on file. This will verify above redeem script.</label>
+    								<p><label>Please double-check below pubkeys with what you have on file. This will verify above redeem script. <b style=font-size:medium>The Arbitrator Will Be AltConSys!</b></label>
     								<table class="table table-striped table-hover">
     									<tbody>
     									</tbody>
     								</table>
-								<br>
+								<br></p>
 							</div>
 	
 							<div class="hidden verifyData" id="verifyRsDataSegWit">
@@ -259,7 +279,7 @@ body {
 	<form id="contractfields" >
 					<div class="form-group">		
 							<label for="offer1Area">YOUR Offer</label>
-							 <textarea rows="6" class="form-control input-lg phoenix-off" id="offer1Area" name="offer1Area" placeholder="(Insert your offer here)" autofocus maxlength="1500"></textarea>
+							 <textarea rows="6" class="form-control input-lg" id="offer1Area" name="offer1Area" placeholder="(Insert your offer here)" autofocus maxlength="1500"></textarea>
 								<span style="color:darkcyan" id="chars"> Characters left</span>
 								<button type="button" id="offerErase">Clear your offer</button>
 								<button type="button" id="defaultOffer">Edit A Standard Offer/Template</button>
@@ -327,7 +347,7 @@ body {
 							<span class="input-group-btn">
 								<button class="btn btn-info qrcodeScanner" type="button" data-toggle="modal" data-target="#modalQrcodeScanner" forward-result="#redeemFrom"><span class="glyphicon glyphicon-camera"></span></button>
 							</span>
-							<input type="text" id="redeemFrom" class="form-control phoenix-btc" value="">
+							<input type="text" id="redeemFrom" class="form-control" value="" readonly>
 							<span class="input-group-btn">
 								<button id="redeemFromBtn" class="btn btn-info" type="submit">Load/Refresh</button>
 							</span>
@@ -432,7 +452,7 @@ body {
 											Arbitration Fixed Rate:
 											<input id="arbitrationFee" type="text" class="form-control amount" readonly placeholder="0.00">
 										</div>
-										<div class="col-xs-6">
+										<div class="col-xs-6"><b>USD $ 0.10</b>
 										</div></p>
 									</div>
 								
@@ -446,7 +466,7 @@ body {
 											<p>Facilitator's Fixed Bonus:
 											<input id="facilitatorFee" type="text" class="form-control amount" readonly placeholder="0.00">
 										</div>
-										<div class="col-xs-6">
+										<div class="col-xs-6"><b>USD $ 5.00</b>
 										</div></p>	
 									</div>
 						
@@ -624,7 +644,7 @@ body {
 
 						
 					</div>
-</div>
+</div>  <!--end VerifyTX-->
 <!------------------------------------------------------------Verify Sig----------------------------------------------------------------------->
 
 <div class="tab-pane tab-content hidden" id="verifySig">
@@ -917,7 +937,7 @@ body {
 							-->
 
 							<select id="mediatorList" class="form-control">
-								<option value="0208abcd348adaa3280d68fc8790f0d8b6b573e258211f529f4aa3cb2ff0ff4a34;axel@i88i.com;1">i88i.org</option>
+								<option value="023200bcf676b71c531d699a9d468a1274df52adcc46d022a2c97d17890714e0b5;support@altconsys.com;1">altconsys.com</option>
 							</select>
 						</div>
 
@@ -958,9 +978,9 @@ body {
 				</div>
 
 				<div class="modal-body">
-					<p>If you push below RESET button all key values will be replaced by new ones.<br>
-					If you are far into the transaction this will really inconvenience your contract partner to have to do everything all over again, so think about it!
-					Save the keys first, just in case, and don't do it if you're not 100% sure!</p>
+					<p>If you push below RESET button all keys of this transaction will be replaced by a new set.<br>
+					If you are far into the transaction this may inconvenience your contract partner!
+					</p>
 					
 											
 				</div>
@@ -1042,6 +1062,5 @@ body {
 
  <script src="js/offers.js" type="text/javascript"></script>	
 <script src="js/tx.js" type="text/javascript"></script> 
-	
-	</body>
+</body>
 </html>

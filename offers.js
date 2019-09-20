@@ -73,35 +73,37 @@ $('#checksum1').on('change keyup paste mousemove click', function() {
     checksumNoWhite = checksumText.replace(/\s+/g, "").trim();
  $('#checksum1').val(md5(checksumNoWhite));
     e.stopImmediatePropagation();
-  
+ 
     offerAjax();
  //    $('#contractfields').unbind('submit');
  });
  
 
 function offerAjax() {
-// console.log(offer);
-// Get everything necessary:
-// Origikey (us1key)
-// MSaddress
-// offer1area if checksum necessitates
-// Checksum
 
+    var offerLoad = [];
+    var offer = "";
+
+  offer = $("#offer1Area").val();
+
+  localforage.getItem(MSaddress).then(function(item) {
+  item[2] = offer;
+  localforage.setItem(MSaddress, item );
+  }); 
   
-	  var offerLoad = [];
-      var offer = "";
-      
-checksumLast = $('#checksum1').val();
-checksumFirst = localStorage.getItem("checksumFirst");
+  
+// checksumLast = $('#checksum1').val();
+// checksumFirst = localStorage.getItem("checksumFirst");
 checksum2 = $('#checksum2').val();
 offerLoad[0] = checksum2;
 // Send offer only when changed:
-if (checksumLast != checksumFirst) {
-  localStorage.setItem('checksumFirst', checksumLast);
-  offer = $("#offer1Area").val();
-  offerLoad[1] = offer;
-}
+// if (checksumLast != checksumFirst) {
+//  localStorage.setItem('checksumFirst', checksumLast);
 
+  offerLoad[1] = offer;
+  
+ 
+// }
   doOffAjax(offerLoad);					
  
 // else {
@@ -128,13 +130,13 @@ if (checksumLast != checksumFirst) {
 		});
     }
     
-function theOffAjax(jsn) { // console.log(jsn);
+function theOffAjax(jsn) { console.log(jsn);
   	return $.ajax({
 
       url: 'https://checkabid.com/btc/offers.php',
       beforeSend: function(xhr){
                 xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("Token"));
-//               console.log(localStorage.getItem("Token"));
+   //             console.log(localStorage.getItem("Token"));
             },
  //  contentType: 'application/json',
  //  dataType: 'json',
@@ -187,9 +189,5 @@ if (($('#checksum2').val()) == ($('#checksum1').val())) {
 });
 $('#newTransaction').removeClass('hidden').show();
 }        
-// Example only:
-// if (badWurst === true) {Swal("The eBay item URL wasn't accepted by the server!\nPlease check the page you're submitting this off of! Then try again!")}
-// if (badSenf === true) {alert("Die URL-Addresse des Senfes wurde vom Server nicht akzeptiert!\nBitte korrigieren Sie und dann versuchen Sie's nochmal!")}
-
-    }
+    } // end processReturnOffers
 });
